@@ -1,0 +1,44 @@
+services:
+  portainer_agent:
+    image: portainer/agent:latest
+    environment:
+      AGENT_CLUSTER_ADDR: tasks.portainer_agent
+      CAP_HOST_MANAGEMENT: '1'
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /var/lib/docker/volumes:/var/lib/docker/volumes
+    networks:
+    - portainer_agent_network
+    ports:
+    - target: 9001
+      published: 9001
+      protocol: tcp
+      mode: host
+    - target: 9000
+      published: 9000
+      protocol: tcp
+      mode: host
+    deploy:
+      mode: global
+      placement:
+        constraints:
+        - node.platform.os == linux
+      labels:
+        portainer.agent: 'true'
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 0
+        window: 0s
+networks:
+  portainer_agent_network:
+    driver: overlay
+    attachable: true
+volumes: {}
